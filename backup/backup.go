@@ -1,4 +1,4 @@
-package main
+package backup
 
 import (
 	"archive/zip"
@@ -13,6 +13,11 @@ import (
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
+
+type Backuper interface {
+	// Uploads the provided file to a safe predefined storage
+	Backup(ctx context.Context, filePath string) error
+}
 
 func backupDatabase() {
 	if config.BackupProvider == "none" || config.BackupProvider == "" {
@@ -110,21 +115,6 @@ func AwsUpload(zipFileName string) {
 	)
 }
 
-func S3Upload(zipFileName string) {
-	if config.S3Config == nil {
-		log.Fatal("🚫 S3 specified as backup provider but no S3 config found. Check environment variables.")
-	}
-
-	s3UploadShared(
-		zipFileName,
-		config.S3Config.AccessKeyID,
-		config.S3Config.SecretKey,
-		config.S3Config.Endpoint,
-		config.S3Config.Region,
-		config.S3Config.BucketName,
-		true,
-	)
-}
 
 func s3UploadShared(
 	zipFileName string,
